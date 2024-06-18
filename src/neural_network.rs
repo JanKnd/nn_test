@@ -68,7 +68,5 @@ impl NeuralNetwork{
         }
     }
 
-    pub fn run(&self, inputs: &Vector) -> Vector{
-        let a = math.tanh
-    }
+
 }
