@@ -5,11 +5,11 @@ use crate::matrix_vector::{Matrix, Vector};
 
 
 
-pub fn tanh(x: f64) -> f64{
-    (( 2. * x ).exp() - 1.) / (( 2. * x ).exp() + 1.)
+pub fn tanh(x: &f64) -> f64{
+    f64::tanh(*x)
 }
 
-pub fn tanh_derivative(x: f64) -> f64{
+pub fn tanh_derivative(x: &f64) -> f64{
     1. - tanh(x).powi(2)
 }
 
@@ -29,36 +29,18 @@ impl NeuralNetwork{
 
 
         let mut weights= vec![];
-        weights.push(Matrix {
-            value: vec![vec![rng.gen_range(0_f64..1_f64); num_inputs]; hidden_layers_neuron_count],
-            hight: hidden_layers_neuron_count,
-            width: num_inputs,
-        });
+        weights.push( Matrix::new_random(hidden_layers_neuron_count, num_inputs, -1.,1.));
             for i in 0..hidden_layers-1{
-                weights.push(Matrix{
-                    value: vec![vec![rng.gen_range(0_f64..1_f64); hidden_layers_neuron_count]; hidden_layers_neuron_count],
-                    hight: hidden_layers_neuron_count,
-                    width: hidden_layers_neuron_count,
-                });
+                weights.push(Matrix::new_random(hidden_layers_neuron_count, hidden_layers_neuron_count, -1.,1.,));
             }
-            weights.push(Matrix{
-                value: vec![vec![rng.gen_range(0_f64..1_f64); num_inputs]; hidden_layers_neuron_count],
-                hight: num_outputs,
-                width: hidden_layers_neuron_count,
-            });
+            weights.push(Matrix::new_random(num_outputs,hidden_layers_neuron_count, -1.,1.));
 
 
         let mut biases = vec![];
             for i in 0..hidden_layers{
-                biases.push(Vector{
-                    value: vec![rng.gen_range(0_f64..1_f64);hidden_layers_neuron_count],
-                    length: hidden_layers_neuron_count,
-                });
+                biases.push(Vector::new_random(hidden_layers_neuron_count, -1.,1.));
             }
-            biases.push(Vector{
-                value: vec![rng.gen_range(0_f64..1_f64); num_outputs],
-                length: num_outputs,
-            });
+            biases.push(Vector::new_random(num_outputs, -1.,1.));
 
         NeuralNetwork{
             num_inputs,
@@ -66,6 +48,15 @@ impl NeuralNetwork{
             biases,
             num_outputs,
         }
+    }
+
+    pub fn run(&self, input: Vector) -> Vector{
+        let mut result: Vector = input;
+        for i in 0..self.biases.len(){
+            result = &(&self.weights[i] * &result) + &self.biases[i];
+            println!("i: {:?}, res: {:?}",i,result);
+        }
+        result.squish_vector()
     }
 
 
