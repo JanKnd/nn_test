@@ -2,9 +2,14 @@ use std::error::Error;
 use std::process::Output;
 use csv::{ReaderBuilder, StringRecord};
 use datetime;
+use savefile::save_file;
 use crate::matrix_vector::Vector;
 
-#[derive(Debug)]
+extern crate savefile;
+use savefile::prelude::*;
+use savefile_derive::Savefile;
+
+#[derive(Debug, Savefile)]
 pub struct TrainingData {
     pub inputs: Vec<Vector>,
     pub outputs: Vec<Vector>,
@@ -40,5 +45,9 @@ impl TrainingData {
             inputs: result_inputs,
             outputs: result_outputs,
         }
+    }
+
+    pub fn save(&self){
+        save_file("Training_data.bin", 0, self).unwrap()
     }
 }

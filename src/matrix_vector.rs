@@ -5,10 +5,10 @@ use std::panic::resume_unwind;
 use rand::distributions::Open01;
 use rand::prelude::*;
 use log::error;
-use crate::neural_network::tanh;
+use crate::neural_network::{tanh, tanh_derivative};
 
 
-#[derive(Debug,Clone)]
+#[derive(Debug,Clone,Savefile)]
 pub struct Matrix{
     pub value: Vec<Vec<f64>>,
     pub hight: usize,
@@ -78,6 +78,20 @@ impl Mul<&Vector> for &Matrix{
     }
 }
 
+impl Mul<&f64> for &Matrix {
+    type Output = Matrix;
+
+    fn mul(self, rhs: &f64) -> Self::Output {
+        let mut result = Matrix::new_zeros(self.hight, self.width);
+        for row in 0..self.hight{
+            for column in 0..self.width{
+                result.value[row][column] = self.value[row][column] * rhs;
+            }
+        }
+        result
+    }
+}
+
 impl Add for &Matrix {
     type Output = Matrix;
     fn add(self, rhs: &Matrix) -> Self::Output {
@@ -96,7 +110,7 @@ impl Add for &Matrix {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Savefile)]
 pub struct Vector{
     pub value: Vec<f64>,
     pub length: usize,
@@ -122,6 +136,14 @@ impl Vector {
         }
     }
 
+    pub fn mul_element_wise(&self, rhs: &Vector) -> Vector{
+        let mut result: Vector = Vector::new_zeros(self.length);
+        for i in 0..self.length{
+            result.value[i] = self.value[i] * rhs.value[i]
+        }
+        result
+    }
+
     pub fn squish_vector(self) -> Vector{
         let mut res:Vector = Vector{
             value: vec![],
@@ -143,7 +165,15 @@ impl Vector {
         }
         sum_error / self.length as f64
     }
-    
+
+
+    pub fn grad_tanh(&self) -> Vector{
+        let mut result = self.clone();
+        for i in 0..self.length{
+            result.value[i] = tanh_derivative(&result.value[i])
+        }
+        result
+    }
     
 
 }
@@ -194,3 +224,4 @@ impl Mul<&f64> for &Vector {
         result
     }
 }
+
