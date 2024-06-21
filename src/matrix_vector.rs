@@ -1,6 +1,7 @@
 use std::fmt::Error;
 use std::ops::{Add, Mul};
 use std::os::windows::ffi::EncodeWide;
+use std::panic::resume_unwind;
 use rand::distributions::Open01;
 use rand::prelude::*;
 use log::error;
@@ -43,6 +44,16 @@ impl Matrix {
             width,
         }
     }
+
+    pub fn transpose(&self) -> Matrix{
+        let mut result = Matrix::new_zeros(self.width,self.hight);
+        for row in 0..self.hight{
+            for column in 0..self.width{
+                result.value[column][row] = self.value[row][column];
+            }
+        }
+        result
+    }
 }
 impl Mul<&Vector> for &Matrix{
     type Output = Vector;
@@ -67,6 +78,23 @@ impl Mul<&Vector> for &Matrix{
     }
 }
 
+impl Add for &Matrix {
+    type Output = Matrix;
+    fn add(self, rhs: &Matrix) -> Self::Output {
+        if self.width != rhs.width || self.hight != rhs.hight{
+            panic!("trying to add two matrices of unequal dimensions")
+        }
+
+        let mut result = Matrix::new_zeros(self.hight,self.width);
+        for row in 0..self.hight{
+            for column in 0..self.width{
+                result.value[row][column] = self.value[row][column] + rhs.value[row][column];
+            }
+        }
+        result
+    }
+}
+
 
 #[derive(Debug, Clone)]
 pub struct Vector{
@@ -75,7 +103,7 @@ pub struct Vector{
 }
 
 impl Vector {
-    pub fn new_zeros(length: usize, width: usize) -> Vector {
+    pub fn new_zeros(length: usize) -> Vector {
         Vector {
             value: vec![0.; length],
             length,
@@ -105,6 +133,19 @@ impl Vector {
         res
     }
 
+    pub fn mse(&self, label: Vector) -> f64{
+        if self.length != label.length {
+            panic!("label doesnt have the same length as self");
+        }
+        let mut sum_error:f64 = 0.;
+        for i in 0..self.length{
+            sum_error += (self.value[i] - label.value[i]).powi(2)
+        }
+        sum_error / self.length as f64
+    }
+    
+    
+
 }
 
 impl Add for &Vector {
@@ -125,3 +166,34 @@ impl Add for &Vector {
     }
 }
 
+//self = column vector, rhs = transposed vector 
+impl Mul for &Vector {
+    type Output = Matrix;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        //self is regarded as a column vector, rhs as a transposed vector
+        let mut result: Matrix =  Matrix::new_zeros(self.length, rhs.length);
+        for row in 0..result.hight{
+            for column in 0..result.width{
+                result.value[row][column] = self.value[row] * rhs.value[column];
+            }
+        }
+        result
+    }
+    
+}
+
+impl Mul<&f64> for &Vector {
+    type Output = Vector;
+
+    fn mul(self, rhs: &f64) -> Self::Output {
+        let mut result:Vector = Vector::new_zeros(self.length);
+        for i in 0..self.length{
+            result.value[i] = self.value[i] * rhs;
+        }
+        result
+    }
+}
+
+//todo :
+// impl Transpose for Matrix,

@@ -50,14 +50,15 @@ impl NeuralNetwork{
         }
     }
 
-    pub fn run(&self, input: Vector) -> Vector{
+    pub fn run(&self, input: Vector, label: Vector) -> f64{
         let mut result: Vector = input;
         for i in 0..self.biases.len(){
-            result = &(&self.weights[i] * &result) + &self.biases[i];
+            result = (&(&self.weights[i] * &result) + &self.biases[i]).squish_vector();
+
             println!("i: {:?}, res: {:?}",i,result);
         }
-        result.squish_vector()
+        result= result.squish_vector();
+        result.mse(label)
     }
-
 
 }

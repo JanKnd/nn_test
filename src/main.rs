@@ -20,10 +20,11 @@ fn main() {
     println!("Matrix is: {:?}, Vector is: {:?}", &matrix, &vector);
 
     println!("Product: {:?}", &matrix * &vector);
-     */
+
 
     let nn = NeuralNetwork::new_random(784, 10, 200, 50);
     let a = TrainingData::new();
-    let outputs = nn.run(a.inputs[0].clone());
-    println!("output: {:?}",outputs);
+    let outputs = nn.run(a.inputs[0].clone(), a.outputs[0].clone());     */
+    let a = Matrix::new_random(2, 3,0.,10.);
+    println!("Matrix: {:?}; Transposed: {:?}", a, a.transpose());
 }
