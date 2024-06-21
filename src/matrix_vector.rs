@@ -194,6 +194,3 @@ impl Mul<&f64> for &Vector {
         result
     }
 }
-
-//todo :
-// impl Transpose for Matrix,
